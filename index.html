@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Kelime Ustası">
+<meta name="theme-color" content="#1a0533">
+<link rel="manifest" href="manifest.json">
+<title>Kelime Ustası 🎓</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --p:#a855f7;--p2:#7c3aed;--acc:#f0abfc;
+  --s:#06b6d4;--ok:#22c55e;--err:#ef4444;
+  --bg:#0a0014;--c1:#1a0533;--c2:#12022a;
+  --txt:#f3e8ff;--muted:#9ca3af;--r:18px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+html,body{height:100%;background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;overflow:hidden;user-select:none}
+
+/* ── SCREENS ── */
+.screen{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;overflow-y:auto;overflow-x:hidden;padding:0 0 calc(20px + var(--safe-bottom));opacity:0;pointer-events:none;transition:opacity .3s}
+.screen.active{opacity:1;pointer-events:all}
+
+/* ── SCROLLBAR hide ── */
+.screen::-webkit-scrollbar{display:none}
+
+/* ── HOME ── */
+#home{padding-top:0}
+.home-hero{width:100%;background:linear-gradient(160deg,#2d0057,#1a0533,#0a0014);padding:56px 24px 32px;text-align:center;position:relative;overflow:hidden}
+.home-hero::before{content:'';position:absolute;inset:-40px;background:radial-gradient(circle at 70% 20%,#7c3aed44,transparent 60%),radial-gradient(circle at 20% 80%,#06b6d444,transparent 50%);pointer-events:none}
+.app-icon{font-size:56px;margin-bottom:8px;display:block}
+.app-title{font-size:28px;font-weight:800;background:linear-gradient(90deg,#a855f7,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.app-sub{color:var(--muted);font-size:13px;margin-top:4px}
+
+.section-label{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--p);padding:20px 20px 8px}
+.pill-row{display:flex;gap:8px;padding:0 20px;flex-wrap:wrap}
+.pill{padding:10px 16px;border-radius:50px;border:1.5px solid #3d1966;background:var(--c1);color:var(--txt);font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;flex:1;text-align:center;min-width:80px}
+.pill.active,.pill:active{background:var(--p2);border-color:var(--p);color:#fff}
+
+.mode-cards{display:flex;flex-direction:column;gap:10px;padding:0 20px}
+.mode-card{background:var(--c1);border:1.5px solid #3d1966;border-radius:var(--r);padding:16px 20px;cursor:pointer;display:flex;align-items:center;gap:14px;transition:all .2s}
+.mode-card:active,.mode-card.active{border-color:var(--p);background:#2d0557}
+.mode-icon{font-size:28px;min-width:36px;text-align:center}
+.mode-info h3{font-size:15px;font-weight:700;margin-bottom:2px}
+.mode-info p{font-size:12px;color:var(--muted);line-height:1.4}
+
+.stats-row{display:flex;gap:10px;padding:0 20px}
+.stat-box{flex:1;background:var(--c1);border:1.5px solid #3d1966;border-radius:var(--r);padding:14px;text-align:center}
+.stat-num{font-size:24px;font-weight:800;color:var(--acc)}
+.stat-lbl{font-size:11px;color:var(--muted);margin-top:2px}
+
+.btn-start{margin:20px 20px 0;width:calc(100% - 40px);padding:18px;background:linear-gradient(135deg,var(--p2),var(--s));border:none;border-radius:50px;color:#fff;font-size:17px;font-weight:800;cursor:pointer;letter-spacing:.03em;box-shadow:0 4px 24px #7c3aed44;transition:transform .15s,box-shadow .15s}
+.btn-start:active{transform:scale(.97);box-shadow:0 2px 12px #7c3aed44}
+
+/* ── QUIZ ── */
+#quiz{padding-top:0}
+.quiz-header{width:100%;background:var(--c2);padding:52px 20px 16px;position:sticky;top:0;z-index:10}
+.quiz-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.quiz-title{font-size:13px;color:var(--muted);font-weight:600}
+.score-badge{background:var(--p2);border-radius:50px;padding:4px 14px;font-size:13px;font-weight:700}
+.progress-bar{width:100%;height:6px;background:#3d1966;border-radius:50px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--p),var(--s));border-radius:50px;transition:width .4s ease}
+
+.quiz-body{width:100%;max-width:500px;padding:24px 20px;flex:1;display:flex;flex-direction:column;gap:16px}
+.question-card{background:linear-gradient(135deg,var(--c1),#1e0040);border:1.5px solid #3d1966;border-radius:24px;padding:32px 24px;text-align:center;min-height:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;box-shadow:0 8px 32px #00000044}
+.q-cat{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--p);margin-bottom:4px}
+.q-word{font-size:34px;font-weight:800;line-height:1.2}
+.q-hint{font-size:13px;color:var(--muted);margin-top:4px}
+
+.answers{display:flex;flex-direction:column;gap:12px}
+.ans-btn{width:100%;padding:20px 24px;background:var(--c1);border:2px solid #3d1966;border-radius:var(--r);color:var(--txt);font-size:17px;font-weight:700;cursor:pointer;transition:all .2s;text-align:center}
+.ans-btn:active{transform:scale(.98)}
+.ans-btn.correct{background:#14532d;border-color:var(--ok);color:#86efac}
+.ans-btn.wrong{background:#450a0a;border-color:var(--err);color:#fca5a5}
+.ans-btn.reveal{background:#1e3a5f;border-color:var(--s);color:#67e8f9}
+
+.quiz-feedback{text-align:center;font-size:20px;font-weight:800;min-height:32px;transition:all .3s}
+.quiz-feedback.ok{color:var(--ok)}
+.quiz-feedback.err{color:var(--err)}
+
+/* ── FLASHCARDS ── */
+#cards{padding-top:0}
+.cards-header{width:100%;background:var(--c2);padding:52px 20px 16px;position:sticky;top:0;z-index:10}
+.cards-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+
+.card-scene{width:100%;max-width:500px;perspective:1000px;padding:24px 20px;flex:1;display:flex;flex-direction:column;align-items:center;gap:20px}
+.flip-card{width:100%;height:220px;cursor:pointer;position:relative;transform-style:preserve-3d;transition:transform .5s cubic-bezier(.4,0,.2,1)}
+.flip-card.flipped{transform:rotateY(180deg)}
+.flip-face{position:absolute;inset:0;backface-visibility:hidden;border-radius:24px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px;text-align:center}
+.face-front{background:linear-gradient(135deg,#2d0057,#1a0533);border:1.5px solid #3d1966;box-shadow:0 8px 32px #00000055}
+.face-back{background:linear-gradient(135deg,#003349,#001a30);border:1.5px solid #164e63;transform:rotateY(180deg);box-shadow:0 8px 32px #00000055}
+.face-front .fc-cat{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--p);margin-bottom:8px}
+.face-front .fc-word{font-size:36px;font-weight:800;color:var(--txt)}
+.face-front .fc-tap{font-size:12px;color:var(--muted);margin-top:12px}
+.face-back .fc-tr{font-size:28px;font-weight:800;color:#67e8f9;margin-bottom:8px}
+.face-back .fc-en{font-size:16px;color:var(--muted)}
+.face-back .fc-cat{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--s);margin-top:12px}
+
+.card-actions{display:flex;gap:12px;width:100%}
+.ca-btn{flex:1;padding:16px;border-radius:var(--r);border:none;font-size:15px;font-weight:700;cursor:pointer;transition:all .2s}
+.ca-btn:active{transform:scale(.97)}
+.ca-no{background:#450a0a;color:#fca5a5;border:1.5px solid var(--err)}
+.ca-yes{background:#14532d;color:#86efac;border:1.5px solid var(--ok)}
+.ca-next{background:var(--c1);color:var(--txt);border:1.5px solid #3d1966;flex:2}
+
+.card-nav{display:flex;align-items:center;justify-content:center;gap:16px;width:100%}
+.nav-btn{width:48px;height:48px;border-radius:50%;background:var(--c1);border:1.5px solid #3d1966;color:var(--txt);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.nav-btn:active{background:var(--p2);border-color:var(--p)}
+.nav-idx{font-size:14px;color:var(--muted);font-weight:600;min-width:60px;text-align:center}
+
+/* ── RESULTS ── */
+#results{align-items:center;justify-content:center;padding:40px 20px}
+.results-wrap{width:100%;max-width:400px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:20px}
+.score-circle{width:150px;height:150px;border-radius:50%;background:conic-gradient(var(--p) calc(var(--pct)*3.6deg),#3d1966 0deg);display:flex;align-items:center;justify-content:center;position:relative;box-shadow:0 0 40px #7c3aed55}
+.score-circle::before{content:'';position:absolute;inset:12px;background:var(--bg);border-radius:50%}
+.score-inner{position:relative;z-index:1}
+.score-num{font-size:36px;font-weight:800;color:var(--txt)}
+.score-tot{font-size:14px;color:var(--muted)}
+.result-msg{font-size:24px;font-weight:800}
+.result-sub{font-size:14px;color:var(--muted);line-height:1.5;max-width:280px}
+.result-btns{display:flex;flex-direction:column;gap:10px;width:100%}
+.rbtn{padding:16px;border-radius:50px;border:none;font-size:16px;font-weight:700;cursor:pointer;transition:all .2s}
+.rbtn:active{transform:scale(.97)}
+.rbtn-primary{background:linear-gradient(135deg,var(--p2),var(--s));color:#fff}
+.rbtn-secondary{background:var(--c1);border:1.5px solid #3d1966;color:var(--txt)}
+
+/* ── NAV BAR ── */
+.navbar{position:fixed;bottom:0;left:0;right:0;background:var(--c2);border-top:1px solid #3d1966;display:flex;padding:8px 0 calc(8px + var(--safe-bottom));z-index:100}
+.nb-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px 0;opacity:.5;transition:opacity .2s}
+.nb-btn.active{opacity:1}
+.nb-icon{font-size:22px}
+.nb-lbl{font-size:10px;font-weight:600;color:var(--acc)}
+
+/* ── UTILS ── */
+.back-btn{width:36px;height:36px;border-radius:50%;background:#3d1966;border:none;color:var(--txt);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.hidden{display:none!important}
+.bounce{animation:bounce .4s}
+@keyframes bounce{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+.shake{animation:shake .4s}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-6px)}80%{transform:translateX(6px)}}
+
+/* iOS status bar area */
+@supports(padding-top: env(safe-area-inset-top)){
+  .home-hero,.quiz-header,.cards-header{padding-top:calc(44px + env(safe-area-inset-top,0px))!important}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════ HOME ══════════════ -->
+<div id="home" class="screen active">
+  <div class="home-hero">
+    <span class="app-icon">🎓</span>
+    <div class="app-title">Kelime Ustası</div>
+    <div class="app-sub">İngiltere yolcusu için İngilizce pratik</div>
+  </div>
+
+  <div class="stats-row" style="margin-top:20px">
+    <div class="stat-box">
+      <div class="stat-num" id="stat-total">0</div>
+      <div class="stat-lbl">Toplam Quiz</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num" id="stat-score">0%</div>
+      <div class="stat-lbl">Ortalama</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num" id="stat-streak">0🔥</div>
+      <div class="stat-lbl">Seri</div>
+    </div>
+  </div>
+
+  <div class="section-label">📚 Kelime Seti</div>
+  <div class="pill-row" id="deck-pills">
+    <div class="pill active" data-deck="all">Tümü</div>
+    <div class="pill" data-deck="expert">Ders ✨</div>
+    <div class="pill" data-deck="golden">İngiltere 100</div>
+  </div>
+
+  <div class="section-label">🗂 Kategori</div>
+  <div class="pill-row" id="cat-pills" style="padding-bottom:4px"></div>
+
+  <div class="section-label">🎮 Mod Seç</div>
+  <div class="mode-cards">
+    <div class="mode-card active" data-mode="tr2en">
+      <div class="mode-icon">🇹🇷→🇬🇧</div>
+      <div class="mode-info">
+        <h3>Türkçe → İngilizce</h3>
+        <p>Türkçeyi gör, doğru İngilizce seçeneği bul</p>
+      </div>
+    </div>
+    <div class="mode-card" data-mode="en2tr">
+      <div class="mode-icon">🇬🇧→🇹🇷</div>
+      <div class="mode-info">
+        <h3>İngilizce → Türkçe</h3>
+        <p>İngilizceyi gör, Türkçe anlamını seç</p>
+      </div>
+    </div>
+    <div class="mode-card" data-mode="cards">
+      <div class="mode-icon">🃏</div>
+      <div class="mode-info">
+        <h3>Kelime Kartları</h3>
+        <p>Kartı çevir, anlamını öğren, sınıflandır</p>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn-start" id="btn-start">Başla →</button>
+</div>
+
+<!-- ══════════════ QUIZ ══════════════ -->
+<div id="quiz" class="screen">
+  <div class="quiz-header">
+    <div class="quiz-top">
+      <button class="back-btn" id="quiz-back">‹</button>
+      <div class="quiz-title" id="quiz-mode-label">TR → EN</div>
+      <div class="score-badge" id="quiz-score-badge">0/0</div>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="quiz-progress" style="width:0%"></div></div>
+  </div>
+
+  <div class="quiz-body">
+    <div class="question-card">
+      <div class="q-cat" id="q-cat"></div>
+      <div class="q-word" id="q-word"></div>
+      <div class="q-hint" id="q-hint"></div>
+    </div>
+    <div class="quiz-feedback" id="quiz-feedback"></div>
+    <div class="answers" id="answers"></div>
+  </div>
+</div>
+
+<!-- ══════════════ FLASHCARDS ══════════════ -->
+<div id="cards" class="screen">
+  <div class="cards-header">
+    <div class="cards-top">
+      <button class="back-btn" id="cards-back">‹</button>
+      <div class="quiz-title" id="cards-label">Kelime Kartları</div>
+      <div class="score-badge" id="cards-badge">1/20</div>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="cards-progress" style="width:0%"></div></div>
+  </div>
+
+  <div class="card-scene">
+    <div class="flip-card" id="flip-card">
+      <div class="flip-face face-front">
+        <div class="fc-cat" id="fc-cat-front"></div>
+        <div class="fc-word" id="fc-word"></div>
+        <div class="fc-tap">👆 Çevirmek için dokun</div>
+      </div>
+      <div class="flip-face face-back">
+        <div class="fc-cat" id="fc-cat-back"></div>
+        <div class="fc-tr" id="fc-tr"></div>
+        <div class="fc-en" id="fc-en-back"></div>
+      </div>
+    </div>
+
+    <div class="card-nav">
+      <button class="nav-btn" id="card-prev">‹</button>
+      <div class="nav-idx" id="card-idx">1 / 20</div>
+      <button class="nav-btn" id="card-next">›</button>
+    </div>
+
+    <div class="card-actions">
+      <button class="ca-btn ca-no" id="card-no">✗ Bilmiyorum</button>
+      <button class="ca-btn ca-yes" id="card-yes">✓ Biliyorum</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ RESULTS ══════════════ -->
+<div id="results" class="screen">
+  <div class="results-wrap">
+    <div style="font-size:48px" id="result-emoji">🎉</div>
+    <div class="score-circle" id="score-circle" style="--pct:0">
+      <div class="score-inner">
+        <div class="score-num" id="res-score">18/20</div>
+        <div class="score-tot">doğru</div>
+      </div>
+    </div>
+    <div class="result-msg" id="result-msg">Harika!</div>
+    <div class="result-sub" id="result-sub">Neredeyse mükemmel! İngiltere'ye hazırsın 🇬🇧</div>
+    <div class="result-btns">
+      <button class="rbtn rbtn-primary" id="res-retry">🔄 Tekrar</button>
+      <button class="rbtn rbtn-secondary" id="res-home">🏠 Ana Sayfa</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ NAVBAR ══════════════ -->
+<nav class="navbar">
+  <div class="nb-btn active" id="nb-home" onclick="goHome()">
+    <div class="nb-icon">🏠</div>
+    <div class="nb-lbl">Ana Sayfa</div>
+  </div>
+  <div class="nb-btn" id="nb-stats" onclick="showStatsSheet()">
+    <div class="nb-icon">📊</div>
+    <div class="nb-lbl">İstatistik</div>
+  </div>
+  <div class="nb-btn" id="nb-all" onclick="quickBrowse()">
+    <div class="nb-icon">📖</div>
+    <div class="nb-lbl">Tüm Kelimeler</div>
+  </div>
+</nav>
+
+<script>
+// ═══════════════════════════════════════════
+// DATA  →  words.json dosyasından yüklenir
+// ═══════════════════════════════════════════
+let WORDS = [];
+
+// ═══════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════
+let state = {
+  deck: 'all',
+  cat: 'all',
+  mode: 'tr2en',
+  quizWords: [],
+  quizIdx: 0,
+  correct: 0,
+  answered: false,
+  cardIdx: 0,
+  cardKnown: new Set(),
+  cardUnknown: new Set(),
+};
+
+let stats = JSON.parse(localStorage.getItem('km_stats') || '{"total":0,"sumPct":0,"streak":0}');
+
+// ═══════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function getFilteredWords() {
+  return WORDS.filter(w => {
+    const deckOk = state.deck === 'all' || w.deck === state.deck;
+    const catOk = state.cat === 'all' || w.cat === state.cat;
+    return deckOk && catOk;
+  });
+}
+
+function getCategories() {
+  const filtered = WORDS.filter(w => state.deck === 'all' || w.deck === state.deck);
+  return ['all', ...new Set(filtered.map(w => w.cat))];
+}
+
+function getWrongOption(correct, pool, field) {
+  const others = pool.filter(w => w[field] !== correct[field]);
+  if (!others.length) return pool[0];
+  return others[Math.floor(Math.random() * others.length)];
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  // navbar active
+  document.querySelectorAll('.nb-btn').forEach(b => b.classList.remove('active'));
+  if (id === 'home') document.getElementById('nb-home').classList.add('active');
+}
+
+function saveStats() {
+  localStorage.setItem('km_stats', JSON.stringify(stats));
+}
+
+// ═══════════════════════════════════════════
+// HOME
+// ═══════════════════════════════════════════
+function buildCatPills() {
+  const cats = getCategories();
+  const container = document.getElementById('cat-pills');
+  container.innerHTML = '';
+  cats.forEach(cat => {
+    const pill = document.createElement('div');
+    pill.className = 'pill' + (state.cat === cat ? ' active' : '');
+    pill.textContent = cat === 'all' ? 'Tümü' : cat;
+    pill.onclick = () => {
+      state.cat = cat;
+      buildCatPills();
+    };
+    container.appendChild(pill);
+  });
+}
+
+function updateStatDisplay() {
+  document.getElementById('stat-total').textContent = stats.total;
+  const avg = stats.total ? Math.round(stats.sumPct / stats.total) : 0;
+  document.getElementById('stat-score').textContent = avg + '%';
+  document.getElementById('stat-streak').textContent = stats.streak + '🔥';
+}
+
+// Deck pills
+document.querySelectorAll('#deck-pills .pill').forEach(p => {
+  p.onclick = () => {
+    state.deck = p.dataset.deck;
+    state.cat = 'all';
+    document.querySelectorAll('#deck-pills .pill').forEach(x => x.classList.remove('active'));
+    p.classList.add('active');
+    buildCatPills();
+  };
+});
+
+// Mode cards
+document.querySelectorAll('.mode-card').forEach(c => {
+  c.onclick = () => {
+    state.mode = c.dataset.mode;
+    document.querySelectorAll('.mode-card').forEach(x => x.classList.remove('active'));
+    c.classList.add('active');
+  };
+});
+
+document.getElementById('btn-start').onclick = () => {
+  const words = getFilteredWords();
+  if (!words.length) { alert('Bu filtrele kelime bulunamadı!'); return; }
+  if (state.mode === 'cards') startCards(words);
+  else startQuiz(words);
+};
+
+// ═══════════════════════════════════════════
+// QUIZ
+// ═══════════════════════════════════════════
+function startQuiz(words) {
+  state.quizWords = shuffle(words).slice(0, Math.min(20, words.length));
+  state.quizIdx = 0;
+  state.correct = 0;
+  showScreen('quiz');
+  const label = state.mode === 'tr2en' ? 'Türkçe → İngilizce' : 'İngilizce → Türkçe';
+  document.getElementById('quiz-mode-label').textContent = label;
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const w = state.quizWords[state.quizIdx];
+  const total = state.quizWords.length;
+  const pct = (state.quizIdx / total) * 100;
+
+  document.getElementById('quiz-progress').style.width = pct + '%';
+  document.getElementById('quiz-score-badge').textContent = state.correct + '/' + state.quizIdx;
+  document.getElementById('q-cat').textContent = w.cat;
+  document.getElementById('quiz-feedback').textContent = '';
+  document.getElementById('quiz-feedback').className = 'quiz-feedback';
+
+  state.answered = false;
+
+  // question & answers
+  const isT2E = state.mode === 'tr2en';
+  const qField = isT2E ? 'tr' : 'en';
+  const aField = isT2E ? 'en' : 'tr';
+
+  document.getElementById('q-word').textContent = w[qField];
+  document.getElementById('q-hint').textContent = isT2E ? '🇬🇧 İngilizce karşılığı nedir?' : '🇹🇷 Türkçe anlamı nedir?';
+
+  const wrong = getWrongOption(w, state.quizWords, aField);
+  const options = shuffle([w, wrong]);
+
+  const container = document.getElementById('answers');
+  container.innerHTML = '';
+  options.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className = 'ans-btn';
+    btn.textContent = opt[aField];
+    btn.onclick = () => handleAnswer(btn, opt[aField] === w[aField], aField, w);
+    container.appendChild(btn);
+  });
+}
+
+function handleAnswer(btn, isCorrect, aField, correctWord) {
+  if (state.answered) return;
+  state.answered = true;
+
+  const allBtns = document.querySelectorAll('.ans-btn');
+  if (isCorrect) {
+    btn.classList.add('correct');
+    btn.classList.add('bounce');
+    state.correct++;
+    const fb = document.getElementById('quiz-feedback');
+    fb.textContent = '✓ Doğru!';
+    fb.className = 'quiz-feedback ok';
+  } else {
+    btn.classList.add('wrong');
+    btn.classList.add('shake');
+    // reveal correct
+    allBtns.forEach(b => {
+      if (b.textContent === correctWord[aField]) b.classList.add('reveal');
+    });
+    const fb = document.getElementById('quiz-feedback');
+    fb.textContent = '✗ Yanlış — Doğrusu: ' + correctWord[aField];
+    fb.className = 'quiz-feedback err';
+  }
+
+  allBtns.forEach(b => { b.onclick = null; b.style.cursor = 'default'; });
+
+  setTimeout(() => {
+    state.quizIdx++;
+    if (state.quizIdx >= state.quizWords.length) showResults();
+    else renderQuestion();
+  }, 1400);
+}
+
+document.getElementById('quiz-back').onclick = goHome;
+
+// ═══════════════════════════════════════════
+// FLASHCARDS
+// ═══════════════════════════════════════════
+function startCards(words) {
+  state.quizWords = shuffle(words);
+  state.cardIdx = 0;
+  state.cardKnown.clear();
+  state.cardUnknown.clear();
+  showScreen('cards');
+  renderCard();
+}
+
+function renderCard() {
+  const w = state.quizWords[state.cardIdx];
+  const total = state.quizWords.length;
+  const pct = ((state.cardIdx + 1) / total) * 100;
+
+  document.getElementById('cards-progress').style.width = pct + '%';
+  document.getElementById('cards-badge').textContent = (state.cardIdx + 1) + '/' + total;
+  document.getElementById('card-idx').textContent = (state.cardIdx + 1) + ' / ' + total;
+  document.getElementById('fc-cat-front').textContent = w.cat;
+  document.getElementById('fc-cat-back').textContent = w.cat;
+  document.getElementById('fc-word').textContent = w.en;
+  document.getElementById('fc-tr').textContent = w.tr;
+  document.getElementById('fc-en-back').textContent = w.en;
+
+  // reset flip
+  const card = document.getElementById('flip-card');
+  card.classList.remove('flipped');
+}
+
+document.getElementById('flip-card').onclick = () => {
+  document.getElementById('flip-card').classList.toggle('flipped');
+};
+
+document.getElementById('card-next').onclick = () => {
+  if (state.cardIdx < state.quizWords.length - 1) {
+    state.cardIdx++;
+    renderCard();
+  } else {
+    showCardResults();
+  }
+};
+
+document.getElementById('card-prev').onclick = () => {
+  if (state.cardIdx > 0) {
+    state.cardIdx--;
+    renderCard();
+  }
+};
+
+document.getElementById('card-yes').onclick = () => {
+  state.cardKnown.add(state.cardIdx);
+  state.cardUnknown.delete(state.cardIdx);
+  if (state.cardIdx < state.quizWords.length - 1) {
+    state.cardIdx++;
+    renderCard();
+  } else {
+    showCardResults();
+  }
+};
+
+document.getElementById('card-no').onclick = () => {
+  state.cardUnknown.add(state.cardIdx);
+  state.cardKnown.delete(state.cardIdx);
+  if (state.cardIdx < state.quizWords.length - 1) {
+    state.cardIdx++;
+    renderCard();
+  } else {
+    showCardResults();
+  }
+};
+
+function showCardResults() {
+  const known = state.cardKnown.size;
+  const total = state.quizWords.length;
+  state.correct = known;
+  state.quizWords = state.quizWords; // keep for retry
+  // treat as quiz results
+  const fakePct = total ? Math.round((known / total) * 100) : 0;
+  // temporarily reuse quiz results
+  state.quizWords.length; // just access
+  showResultsScreen(known, total);
+}
+
+document.getElementById('cards-back').onclick = goHome;
+
+// ═══════════════════════════════════════════
+// RESULTS
+// ═══════════════════════════════════════════
+function showResults() {
+  const correct = state.correct;
+  const total = state.quizWords.length;
+  showResultsScreen(correct, total);
+}
+
+function showResultsScreen(correct, total) {
+  const pct = total ? Math.round((correct / total) * 100) : 0;
+
+  // update stats
+  stats.total++;
+  stats.sumPct += pct;
+  if (pct >= 70) stats.streak++;
+  else stats.streak = 0;
+  saveStats();
+  updateStatDisplay();
+
+  // set circle
+  document.getElementById('score-circle').style.setProperty('--pct', pct);
+  document.getElementById('res-score').textContent = correct + '/' + total;
+
+  let emoji, msg, sub;
+  if (pct === 100) { emoji='🏆'; msg='Mükemmel!'; sub='100% doğru! Sen zaten İngilizce biliyorsun 🇬🇧'; }
+  else if (pct >= 80) { emoji='🎉'; msg='Harika!'; sub='Çok az hata yaptın. İngiltere\'ye hazırsın!'; }
+  else if (pct >= 60) { emoji='💪'; msg='İyi iş!'; sub='Yolun yarısına geldin. Biraz daha pratik yapalım.'; }
+  else if (pct >= 40) { emoji='📚'; msg='Devam et!'; sub='Her pratik bir adım. Tekrar dene!'; }
+  else { emoji='🌱'; msg='Başlangıç!'; sub='Henüz başlıyoruz. Tekrar çalışmak süper işe yarar.'; }
+
+  document.getElementById('result-emoji').textContent = emoji;
+  document.getElementById('result-msg').textContent = msg;
+  document.getElementById('result-sub').textContent = sub;
+
+  showScreen('results');
+}
+
+document.getElementById('res-retry').onclick = () => {
+  if (state.mode === 'cards') startCards(state.quizWords);
+  else startQuiz(getFilteredWords());
+};
+
+document.getElementById('res-home').onclick = goHome;
+
+// ═══════════════════════════════════════════
+// BROWSE / STATS SHEET (simple overlay)
+// ═══════════════════════════════════════════
+function showStatsSheet() {
+  const pct = stats.total ? Math.round(stats.sumPct / stats.total) : 0;
+  alert(
+    '📊 İstatistikleriniz\n\n' +
+    '✅ Toplam Quiz: ' + stats.total + '\n' +
+    '🎯 Ortalama: %' + pct + '\n' +
+    '🔥 Seri: ' + stats.streak + '\n\n' +
+    'Toplam kelime: ' + WORDS.length + '\n' +
+    'Ders kelimeleri: ' + WORDS.filter(w=>w.deck==='expert').length + '\n' +
+    'İngiltere 100: ' + WORDS.filter(w=>w.deck==='golden').length
+  );
+}
+
+function quickBrowse() {
+  const words = getFilteredWords();
+  const lines = words.map(w => '• ' + w.en + ' = ' + w.tr).join('\n');
+  alert('📖 Kelimeler (' + words.length + ' adet)\n\n' + lines);
+}
+
+function goHome() {
+  showScreen('home');
+  updateStatDisplay();
+  buildCatPills();
+}
+
+// ═══════════════════════════════════════════
+// INIT  →  words.json yükle, sonra başlat
+// ═══════════════════════════════════════════
+fetch('words.json')
+  .then(r => r.json())
+  .then(data => {
+    WORDS = data;
+    buildCatPills();
+    updateStatDisplay();
+  })
+  .catch(() => {
+    document.querySelector('.app-sub').textContent = '⚠️ words.json yüklenemedi. Bir sunucu üzerinden aç.';
+  });
+</script>
+</body>
+</html>
