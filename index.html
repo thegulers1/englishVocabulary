@@ -92,6 +92,14 @@
         .prog-bar{width:100%;height:5px;background:#3d1966;border-radius:50px;overflow:hidden;margin-bottom:4px}
         .prog-fill{height:100%;background:linear-gradient(90deg,var(--p),var(--s));border-radius:50px;transition:width .3s}
 
+        /* Quiz nav */
+        .quiz-nav{position:fixed;bottom:0;left:0;right:0;display:none;gap:10px;padding:12px 20px;padding-bottom:calc(12px + env(safe-area-inset-bottom,0px));background:var(--bg);border-top:1px solid #3d1966;z-index:100}
+        .quiz-nav.active{display:flex}
+        .qnav-btn{flex:1;padding:15px;border-radius:var(--r);border:none;font-size:15px;font-weight:700;cursor:pointer;transition:.2s}
+        .qnav-btn:disabled{opacity:.3;cursor:not-allowed}
+        .qnav-prev{background:var(--c1);border:1.5px solid #3d1966;color:var(--txt)}
+        .qnav-next{background:linear-gradient(135deg,var(--p2),var(--s));color:#fff}
+
         /* Shared buttons */
         .btn-start{position:fixed;bottom:20px;left:20px;right:20px;padding:18px;background:linear-gradient(135deg,var(--p2),var(--s));border:none;border-radius:50px;color:white;font-weight:800;font-size:17px;cursor:pointer;z-index:1000;box-shadow:0 10px 20px rgba(0,0,0,0.4)}
         .speak-btn{margin-top:10px;background:none;border:1.5px solid #3d1966;border-radius:50px;color:var(--muted);font-size:13px;padding:6px 18px;cursor:pointer;transition:0.2s}
@@ -203,6 +211,12 @@
         <div id="example-tr" style="font-size:13px;color:#9ca3af;margin-top:8px;line-height:1.5;font-style:italic"></div>
         <button class="speak-btn" onclick="speakExample()" style="margin-top:10px">🔊 Cümleyi Dinle</button>
     </div>
+    <div style="height:80px"></div>
+</div>
+
+<div class="quiz-nav" id="quiz-nav">
+    <button class="qnav-btn qnav-prev" id="qnav-prev" onclick="prevStep()" disabled>‹ Önceki</button>
+    <button class="qnav-btn qnav-next" id="qnav-next" onclick="nextStep()" disabled>Sonraki ›</button>
 </div>
 
 <!-- ══════════ PHRASES ══════════ -->
@@ -401,7 +415,8 @@ let state = {
     sessionSet: [],
     currentIdx: 0,
     correctCount: 0,
-    wrongList: JSON.parse(localStorage.getItem('wm_wrong') || '[]')
+    wrongList: JSON.parse(localStorage.getItem('wm_wrong') || '[]'),
+    answeredSet: new Set()
 };
 let ph = {
     filtered: [],
@@ -465,6 +480,7 @@ function updateStats() {
 
 function goHome() {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById('quiz-nav').classList.remove('active');
     document.getElementById('home').classList.add('active');
     updateStats();
 }
@@ -588,8 +604,10 @@ function initSession() {
 
     state.currentIdx   = 0;
     state.correctCount = 0;
+    state.answeredSet  = new Set();
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById('quiz').classList.add('active');
+    document.getElementById('quiz-nav').classList.add('active');
     document.getElementById('q-total').textContent = state.sessionSet.length;
     renderStep();
 }
@@ -613,6 +631,12 @@ function renderStep() {
     // Hint buton: sadece fill modunda görünür
     document.getElementById('hint-btn').style.display = isFill ? 'inline-block' : 'none';
     document.getElementById('hint-box').style.display = 'none';
+
+    // Nav butonları
+    const isLast = state.currentIdx === state.sessionSet.length - 1;
+    document.getElementById('qnav-prev').disabled = state.currentIdx === 0;
+    document.getElementById('qnav-next').disabled = !state.answeredSet.has(state.currentIdx);
+    document.getElementById('qnav-next').textContent = isLast ? 'Bitir 🏁' : 'Sonraki ›';
 
     if(isFill) {
         // Cümledeki kelimeyi ___ ile değiştir
@@ -655,23 +679,30 @@ function renderStep() {
 function handleChoice(isCorrect, btn, wordObj, isFill) {
     document.querySelectorAll('.ans-btn').forEach(b => b.onclick = null);
 
+    // İlk kez cevaplanıyorsa skor & SRS güncelle
+    if(!state.answeredSet.has(state.currentIdx)) {
+        if(isCorrect) {
+            state.correctCount++;
+            document.getElementById('session-score').textContent = state.correctCount + ' ✓';
+            state.wrongList = state.wrongList.filter(w => w.en !== wordObj.en);
+        } else {
+            if(!state.wrongList.some(w => w.en === wordObj.en)) state.wrongList.push(wordObj);
+        }
+        localStorage.setItem('wm_wrong', JSON.stringify(state.wrongList));
+        updateSRS(wordObj.en, isCorrect);
+        state.answeredSet.add(state.currentIdx);
+    }
+
     if(isCorrect) {
         btn.classList.add('correct');
-        state.correctCount++;
-        document.getElementById('session-score').textContent = state.correctCount + ' ✓';
-        state.wrongList = state.wrongList.filter(w => w.en !== wordObj.en);
     } else {
         btn.classList.add('wrong');
-        // Fill modunda doğru cevabı göster
         document.querySelectorAll('.ans-btn').forEach(b => {
             if(b.textContent === wordObj.en) b.classList.add('reveal');
         });
-        if(!state.wrongList.some(w => w.en === wordObj.en)) state.wrongList.push(wordObj);
     }
-    localStorage.setItem('wm_wrong', JSON.stringify(state.wrongList));
-    updateSRS(wordObj.en, isCorrect);
 
-    // Örnek cümleyi göster (fill modunda her zaman, normal modda varsa)
+    // Örnek cümleyi göster
     if(wordObj.example) {
         const highlighted = wordObj.example.replace(
             new RegExp(escapeRegex(wordObj.en), 'gi'),
@@ -687,12 +718,24 @@ function handleChoice(isCorrect, btn, wordObj, isFill) {
         if(isFill) speak(wordObj.example);
     }
 
-    const delay = (wordObj.example || isFill) ? 2400 : 900;
-    setTimeout(() => {
+    // Sonraki butonunu aç
+    document.getElementById('qnav-next').disabled = false;
+}
+
+function nextStep() {
+    if(state.currentIdx < state.sessionSet.length - 1) {
         state.currentIdx++;
-        if(state.currentIdx < state.sessionSet.length) renderStep();
-        else finishSession();
-    }, delay);
+        renderStep();
+    } else {
+        finishSession();
+    }
+}
+
+function prevStep() {
+    if(state.currentIdx > 0) {
+        state.currentIdx--;
+        renderStep();
+    }
 }
 
 function finishSession() {
