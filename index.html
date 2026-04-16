@@ -1,109 +1,204 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="WordMaster Pro">
-<meta name="theme-color" content="#1a0533">
-<title>WordMaster Pro 🎓</title>
-<style>
-/* CSS Kısmında sadece renk dokunuşları ve seyahat ikonlarının temizliği yapıldı */
-:root{
-  --p:#a855f7;--p2:#7c3aed;--acc:#f0abfc;
-  --s:#06b6d4;--ok:#22c55e;--err:#ef4444;
-  --bg:#0a0014;--c1:#1a0533;--c2:#12022a;
-  --txt:#f3e8ff;--muted:#9ca3af;--r:18px;
-}
-/* ... (Geri kalan CSS aynı kalabilir, sadece görsel metinleri aşağıda güncelledik) ... */
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>WordMaster Pro - Öğrenme Modu 🎓</title>
+    <style>
+        /* Modern UI Reset */
+        *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+        :root{
+            --p:#a855f7;--p2:#7c3aed;--acc:#f0abfc;
+            --s:#06b6d4;--ok:#22c55e;--err:#ef4444;
+            --bg:#0a0014;--c1:#1a0533;--c2:#12022a;
+            --txt:#f3e8ff;--muted:#9ca3af;--r:18px;
+        }
+        body{background:var(--bg);color:var(--txt);font-family:-apple-system,sans-serif;overflow-x:hidden}
+        .screen{display:none;padding:20px;min-height:100vh;flex-direction:column;align-items:center}
+        .screen.active{display:flex}
+        
+        /* Home & Hero */
+        .hero{text-align:center;padding:30px 0;width:100%}
+        .app-title{font-size:28px;font-weight:800;background:linear-gradient(90deg,var(--p),var(--s));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        
+        /* Stats */
+        .stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;width:100%;margin:15px 0}
+        .stat-box{background:var(--c1);border:1px solid #3d1966;padding:12px;border-radius:var(--r);text-align:center}
+        .stat-num{font-size:18px;font-weight:800;color:var(--acc);display:block}
+        .stat-lbl{font-size:9px;color:var(--muted);text-transform:uppercase}
+
+        /* Mode Selection */
+        .section-label{width:100%;font-size:11px;color:var(--p);font-weight:700;margin:15px 0 8px;letter-spacing:1px}
+        .mode-cards{width:100%;display:flex;flex-direction:column;gap:10px;margin-bottom:80px}
+        .mode-card{background:var(--c1);border:1px solid #3d1966;border-radius:var(--r);padding:15px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:0.2s}
+        .mode-card.active{border-color:var(--s);background:#1e0040;transform: scale(1.02);}
+        .mode-card.special{border-color:var(--acc);background:linear-gradient(135deg,#1a0533,#2d0057)}
+
+        /* Quiz UI */
+        .q-card{background:var(--c1);width:100%;padding:40px 20px;border-radius:var(--r);text-align:center;margin:20px 0;border:1px solid #3d1966;position:relative}
+        .ans-btn{width:100%;padding:16px;margin-bottom:8px;background:var(--c2);border:2px solid #3d1966;border-radius:var(--r);color:var(--txt);font-weight:700;cursor:pointer;transition:0.2s}
+        .ans-btn.correct{background:var(--ok)!important;border-color:white}
+        .ans-btn.wrong{background:var(--err)!important;border-color:white}
+
+        .btn-start{position:fixed;bottom:20px;left:20px;right:20px;padding:18px;background:linear-gradient(135deg,var(--p2),var(--s));border:none;border-radius:50px;color:white;font-weight:800;font-size:17px;cursor:pointer;z-index:1000;box-shadow:0 10px 20px rgba(0,0,0,0.4)}
+    </style>
 </head>
 <body>
 
 <div id="home" class="screen active">
-  <div class="home-hero">
-    <span class="app-icon">💎</span>
-    <div class="app-title">WordMaster Pro</div>
-    <div class="app-sub">Oxford 5000™ Kapsamlı Dil Gelişimi</div>
-  </div>
+    <div class="hero">
+        <span style="font-size:36px">🔥</span>
+        <h1 class="app-title">WordMaster Pro</h1>
+        <p style="color:var(--muted); font-size:12px">Bugün Yeni Bir Şey Öğren</p>
+    </div>
 
-  <div class="stats-row" style="margin-top:20px">
-    <div class="stat-box">
-      <div class="stat-num" id="stat-total">0</div>
-      <div class="stat-lbl">Tamamlanan</div>
+    <div class="stats-grid">
+        <div class="stat-box"><span class="stat-num" id="stat-daily">0/30</span><span class="stat-lbl">Günün İlerlemesi</span></div>
+        <div class="stat-box"><span class="stat-num" id="stat-wrong-count">0</span><span class="stat-lbl">Hata Kumbarası</span></div>
     </div>
-    <div class="stat-box">
-      <div class="stat-num" id="stat-score">0%</div>
-      <div class="stat-lbl">Başarı Oranı</div>
-    </div>
-    <div class="stat-box">
-      <div class="stat-num" id="stat-streak">0🔥</div>
-      <div class="stat-lbl">Günlük Seri</div>
-    </div>
-  </div>
 
-  <div class="section-label">📚 Müfredat Seviyesi</div>
-  <div class="pill-row" id="deck-pills">
-    <div class="pill active" data-deck="all">Tümü</div>
-    <div class="pill" data-deck="expert">Oxford 5000 ✨</div>
-    <div class="pill" data-deck="business">İş Dünyası</div>
-  </div>
-
-  <div class="section-label">🗂 Uzmanlık Alanı</div>
-  <div class="pill-row" id="cat-pills" style="padding-bottom:4px"></div>
-
-  <div class="section-label">🎮 Çalışma Modu</div>
-  <div class="mode-cards">
-    <div class="mode-card active" data-mode="tr2en">
-      <div class="mode-icon">🧠</div>
-      <div class="mode-info">
-        <h3>Aktif Hatırlama</h3>
-        <p>Türkçe anlamdan İngilizce kelimeye ulaş</p>
-      </div>
+    <div class="section-label">🎯 ÖĞRENME ODAĞI</div>
+    <div class="mode-cards">
+        <div class="mode-card active special" id="mode-daily" onclick="setAppMode('daily', this)">
+            <span style="font-size:24px">📅</span>
+            <div><h3>Günün 30 Kelimesi</h3><p>Her gün taze, karma set.</p></div>
+        </div>
+        <div class="mode-card" id="mode-mistakes" onclick="setAppMode('mistakes', this)">
+            <span style="font-size:24px">♻️</span>
+            <div><h3>Hata Tekrarı</h3><p>Yanlış bildiklerini temizle.</p></div>
+        </div>
     </div>
-    <div class="mode-card" data-mode="en2tr">
-      <div class="mode-icon">📖</div>
-      <div class="mode-info">
-        <h3>Pasif Tanıma</h3>
-        <p>İngilizce kelimenin karşılığını seç</p>
-      </div>
-    </div>
-    <div class="mode-card" data-mode="cards">
-      <div class="mode-icon">🃏</div>
-      <div class="mode-info">
-        <h3>Flashcards</h3>
-        <p>Aralıklı tekrar yöntemiyle ezberle</p>
-      </div>
-    </div>
-  </div>
 
-  <button class="btn-start" id="btn-start">Antrenmana Başla →</button>
+    <button class="btn-start" onclick="initSession()">Çalışmaya Başla →</button>
 </div>
 
-<div id="results" class="screen">
-  <div class="results-wrap">
-    <div style="font-size:48px" id="result-emoji">📈</div>
-    <div class="score-circle" id="score-circle" style="--pct:0">
-      <div class="score-inner">
-        <div class="score-num" id="res-score">0/0</div>
-        <div class="score-tot">isabet</div>
-      </div>
+<div id="quiz" class="screen">
+    <div style="width:100%; display:flex; justify-content:space-between; align-items:center">
+        <button onclick="location.reload()" style="background:none; border:none; color:var(--muted); font-size:20px">✕</button>
+        <div style="font-size:14px; font-weight:700"><span id="q-idx">1</span> / <span id="q-total">30</span></div>
+        <div id="session-score" style="color:var(--ok); font-weight:800">0</div>
     </div>
-    <div class="result-msg" id="result-msg">Analiz Tamamlandı</div>
-    <div class="result-sub" id="result-sub">Kelime dağarcığın hızla gelişiyor. Bir sonraki seviyeye geçmeye hazırsın.</div>
-    <div class="result-btns">
-      <button class="rbtn rbtn-primary" id="res-retry">🔄 Yeni Test</button>
-      <button class="rbtn rbtn-secondary" id="res-home">🏠 Panele Dön</button>
+    
+    <div class="q-card">
+        <div id="q-cat" style="color:var(--p); font-size:11px; font-weight:700; letter-spacing:1px">KATEGORİ</div>
+        <div id="q-word" style="font-size:28px; font-weight:800; margin:10px 0">Kelime</div>
+        <div id="q-type" style="font-size:10px; color:var(--muted)">ÇEVİRİYİ SEÇ</div>
     </div>
-  </div>
+    <div id="answers-container" style="width:100%"></div>
 </div>
 
 <script>
-// JSON dosyasından 5000 kelimeyi çekerken kategorileri daha profesyonelce ayıracak
-// state.deck yapılandırması artık "expert" (Oxford listesi) üzerine kurulu.
+let ALL_WORDS = [];
+let state = {
+    mode: 'daily',
+    sessionSet: [],
+    currentIdx: 0,
+    correctCount: 0,
+    wrongList: JSON.parse(localStorage.getItem('wm_wrong_list') || '[]')
+};
 
-// ... (Geri kalan JS mantığı aynı kalabilir ancak metinler güncellendi) ...
+// Uygulama Modunu Ayarla
+function setAppMode(m, el) {
+    state.mode = m;
+    document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+}
+
+// Oturumu Başlat
+async function initSession() {
+    if(ALL_WORDS.length === 0) return alert("Veriler yükleniyor...");
+
+    if(state.mode === 'daily') {
+        // Günlük 30 kelimeyi çek (Hergün aynı kalsın istersen tarih bazlı seed atılabilir)
+        state.sessionSet = ALL_WORDS.sort(() => 0.5 - Math.random()).slice(0, 30);
+    } else {
+        // Hata listesinden çek
+        if(state.wrongList.length === 0) return alert("Hata kumbaranız şu an boş! Önce günlük set çalışın.");
+        state.sessionSet = [...state.wrongList].sort(() => 0.5 - Math.random());
+    }
+
+    state.currentIdx = 0;
+    state.correctCount = 0;
+    document.getElementById('home').classList.remove('active');
+    document.getElementById('quiz').classList.add('active');
+    document.getElementById('q-total').innerText = state.sessionSet.length;
+    renderStep();
+}
+
+function renderStep() {
+    let word = state.sessionSet[state.currentIdx];
+    document.getElementById('q-idx').innerText = state.currentIdx + 1;
+    document.getElementById('q-cat').innerText = word.cat.toUpperCase();
+    
+    // Rastgele Dil Yönü (Öğretme odaklı karma)
+    let isEnToTr = Math.random() > 0.5;
+    document.getElementById('q-word').innerText = isEnToTr ? word.en : word.tr;
+    document.getElementById('q-type').innerText = isEnToTr ? "TÜRKÇE ANLAMINI SEÇ" : "İNGİLİZCE KARŞILIĞINI SEÇ";
+    
+    let correct = isEnToTr ? word.tr : word.en;
+    
+    // Çeldirici bul
+    let distractor = ALL_WORDS[Math.floor(Math.random() * ALL_WORDS.length)];
+    let wrong = isEnToTr ? distractor.tr : distractor.en;
+    if(wrong === correct) wrong = "Alternative"; 
+
+    let options = [correct, wrong].sort(() => 0.5 - Math.random());
+    
+    let container = document.getElementById('answers-container');
+    container.innerHTML = '';
+    
+    options.forEach(opt => {
+        let btn = document.createElement('button');
+        btn.className = 'ans-btn';
+        btn.innerText = opt;
+        btn.onclick = () => handleChoice(opt === correct, btn, word);
+        container.appendChild(btn);
+    });
+}
+
+function handleChoice(isCorrect, btn, wordObj) {
+    if(isCorrect) {
+        btn.classList.add('correct');
+        state.correctCount++;
+        document.getElementById('session-score').innerText = state.correctCount;
+        
+        // Eğer hata listesindeyse ve bildiyse listeden çıkar
+        state.wrongList = state.wrongList.filter(w => w.en !== wordObj.en);
+    } else {
+        btn.classList.add('wrong');
+        // Hata listesine ekle (eğer zaten yoksa)
+        if(!state.wrongList.some(w => w.en === wordObj.en)) {
+            state.wrongList.push(wordObj);
+        }
+    }
+    
+    localStorage.setItem('wm_wrong_list', JSON.stringify(state.wrongList));
+    updateHomeStats();
+
+    setTimeout(() => {
+        state.currentIdx++;
+        if(state.currentIdx < state.sessionSet.length) renderStep();
+        else finishSession();
+    }, 800);
+}
+
+function finishSession() {
+    alert(`Seans Tamamlandı!\nSkor: ${state.correctCount} / ${state.sessionSet.length}\nYanlışların kumbaraya eklendi.`);
+    location.reload();
+}
+
+function updateHomeStats() {
+    document.getElementById('stat-wrong-count').innerText = state.wrongList.length;
+}
+
+// Verileri Yükle
+fetch('words.json')
+    .then(r => r.json())
+    .then(data => {
+        ALL_WORDS = data;
+        updateHomeStats();
+    })
+    .catch(e => console.error("Veri hatası:", e));
 </script>
 </body>
 </html>
