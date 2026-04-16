@@ -200,6 +200,7 @@
     <div class="example-box" id="example-box">
         <div class="example-label">📖 ÖRNEK CÜMLE</div>
         <div class="example-text" id="example-text"></div>
+        <div id="example-tr" style="font-size:13px;color:#9ca3af;margin-top:8px;line-height:1.5;font-style:italic"></div>
         <button class="speak-btn" onclick="speakExample()" style="margin-top:10px">🔊 Cümleyi Dinle</button>
     </div>
 </div>
@@ -421,7 +422,8 @@ function speakExample()  { if(currentExample) speak(currentExample); }
 function speakPhrase()   { if(currentPhraseEn) speak(currentPhraseEn); }
 function showHint() {
     const word = state.sessionSet[state.currentIdx];
-    document.getElementById('hint-box').textContent = '🇹🇷 ' + word.tr;
+    const hint = word.exampleTr ? `🇹🇷 ${word.exampleTr}` : `🇹🇷 ${word.tr}`;
+    document.getElementById('hint-box').textContent = hint;
     document.getElementById('hint-box').style.display = 'block';
     document.getElementById('hint-btn').style.display = 'none';
 }
@@ -680,6 +682,7 @@ function handleChoice(isCorrect, btn, wordObj, isFill) {
             : '📖 ÖRNEK CÜMLE';
         document.getElementById('example-label') && (document.getElementById('example-label').textContent = label);
         document.getElementById('example-text').innerHTML = highlighted;
+        document.getElementById('example-tr').textContent = wordObj.exampleTr ? '🇹🇷 ' + wordObj.exampleTr : '';
         document.getElementById('example-box').style.display = 'block';
         if(isFill) speak(wordObj.example);
     }
