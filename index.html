@@ -3,9 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>WordMaster Pro - Öğrenme Modu 🎓</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="WordMaster">
+    <meta name="theme-color" content="#0a0014">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎓</text></svg>">
+    <title>WordMaster Pro 🎓</title>
     <style>
-        /* Modern UI Reset */
         *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
         :root{
             --p:#a855f7;--p2:#7c3aed;--acc:#f0abfc;
@@ -14,191 +19,752 @@
             --txt:#f3e8ff;--muted:#9ca3af;--r:18px;
         }
         body{background:var(--bg);color:var(--txt);font-family:-apple-system,sans-serif;overflow-x:hidden}
-        .screen{display:none;padding:20px;min-height:100vh;flex-direction:column;align-items:center}
+        .screen{display:none;padding:20px;padding-bottom:40px;min-height:100vh;flex-direction:column;align-items:center}
         .screen.active{display:flex}
-        
-        /* Home & Hero */
-        .hero{text-align:center;padding:30px 0;width:100%}
+
+        /* Hero */
+        .hero{text-align:center;padding:40px 0 16px;width:100%}
         .app-title{font-size:28px;font-weight:800;background:linear-gradient(90deg,var(--p),var(--s));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-        
+
         /* Stats */
-        .stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;width:100%;margin:15px 0}
+        .stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%;margin:15px 0}
         .stat-box{background:var(--c1);border:1px solid #3d1966;padding:12px;border-radius:var(--r);text-align:center}
         .stat-num{font-size:18px;font-weight:800;color:var(--acc);display:block}
         .stat-lbl{font-size:9px;color:var(--muted);text-transform:uppercase}
 
-        /* Mode Selection */
-        .section-label{width:100%;font-size:11px;color:var(--p);font-weight:700;margin:15px 0 8px;letter-spacing:1px}
-        .mode-cards{width:100%;display:flex;flex-direction:column;gap:10px;margin-bottom:80px}
+        /* Source toggle */
+        .source-toggle{display:flex;width:100%;background:var(--c2);border-radius:50px;padding:4px;border:1px solid #3d1966}
+        .src-btn{flex:1;padding:9px 4px;border:none;border-radius:50px;background:none;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;transition:.2s}
+        .src-btn.active{background:var(--p2);color:#fff}
+
+        /* Mode cards */
+        .section-label{width:100%;font-size:11px;color:var(--p);font-weight:700;margin:14px 0 8px;letter-spacing:1px}
+        .mode-cards{width:100%;display:flex;flex-direction:column;gap:10px;margin-bottom:100px}
         .mode-card{background:var(--c1);border:1px solid #3d1966;border-radius:var(--r);padding:15px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:0.2s}
-        .mode-card.active{border-color:var(--s);background:#1e0040;transform: scale(1.02);}
+        .mode-card.active{border-color:var(--s);background:#1e0040;transform:scale(1.02)}
         .mode-card.special{border-color:var(--acc);background:linear-gradient(135deg,#1a0533,#2d0057)}
+        .mode-card h3{font-size:15px;font-weight:700}
+        .mode-card p{font-size:11px;color:var(--muted);margin-top:2px}
 
         /* Quiz UI */
-        .q-card{background:var(--c1);width:100%;padding:40px 20px;border-radius:var(--r);text-align:center;margin:20px 0;border:1px solid #3d1966;position:relative}
-        .ans-btn{width:100%;padding:16px;margin-bottom:8px;background:var(--c2);border:2px solid #3d1966;border-radius:var(--r);color:var(--txt);font-weight:700;cursor:pointer;transition:0.2s}
-        .ans-btn.correct{background:var(--ok)!important;border-color:white}
-        .ans-btn.wrong{background:var(--err)!important;border-color:white}
+        .q-card{background:var(--c1);width:100%;padding:36px 20px 24px;border-radius:var(--r);text-align:center;margin:20px 0;border:1px solid #3d1966}
+        .ans-btn{width:100%;padding:16px;margin-bottom:8px;background:var(--c2);border:2px solid #3d1966;border-radius:var(--r);color:var(--txt);font-weight:700;font-size:15px;cursor:pointer;transition:0.2s}
+        .ans-btn.correct{background:#14532d!important;border-color:var(--ok)!important;color:#86efac}
+        .ans-btn.wrong{background:#450a0a!important;border-color:var(--err)!important;color:#fca5a5}
+        .ans-btn.reveal{background:#1e3a5f!important;border-color:var(--s)!important;color:#67e8f9}
 
+        /* Example box */
+        .example-box{display:none;width:100%;background:var(--c1);border:1px solid #164e63;border-radius:var(--r);padding:16px;text-align:center;margin-top:4px}
+        .example-label{font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--s);margin-bottom:8px}
+        .example-text{font-size:15px;line-height:1.6;color:var(--txt)}
+        .example-text em{font-style:normal;color:var(--acc);font-weight:700}
+
+        /* ── PHRASES SCREEN ── */
+        .phrase-header{width:100%;display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+        .scenario-pills{display:flex;gap:8px;width:100%;overflow-x:auto;padding-bottom:8px;margin-bottom:4px;scrollbar-width:none}
+        .scenario-pills::-webkit-scrollbar{display:none}
+        .spill{padding:7px 14px;border-radius:50px;border:1.5px solid #3d1966;background:var(--c1);color:var(--muted);font-size:12px;font-weight:600;white-space:nowrap;cursor:pointer;transition:.2s;flex-shrink:0}
+        .spill.active{background:var(--p2);border-color:var(--p);color:#fff}
+
+        /* Phrase flip card */
+        .phrase-scene{width:100%;perspective:1000px;margin:8px 0}
+        .phrase-card{width:100%;min-height:200px;cursor:pointer;position:relative;transform-style:preserve-3d;transition:transform .5s cubic-bezier(.4,0,.2,1)}
+        .phrase-card.flipped{transform:rotateY(180deg)}
+        .phrase-face{position:absolute;inset:0;backface-visibility:hidden;border-radius:24px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 24px;text-align:center}
+        .pf-front{background:linear-gradient(135deg,#2d0057,#1a0533);border:1.5px solid #3d1966}
+        .pf-back{background:linear-gradient(135deg,#003349,#001a30);border:1.5px solid #164e63;transform:rotateY(180deg)}
+        .pf-front .scenario-tag{font-size:11px;font-weight:700;letter-spacing:.1em;color:var(--p);margin-bottom:12px}
+        .pf-front .phrase-tr{font-size:20px;font-weight:800;line-height:1.4;color:var(--txt)}
+        .pf-front .tap-hint{font-size:12px;color:var(--muted);margin-top:16px}
+        .pf-back .phrase-en{font-size:18px;font-weight:800;line-height:1.5;color:#67e8f9;margin-bottom:10px}
+        .pf-back .phrase-tip{font-size:12px;color:var(--muted);line-height:1.5;padding:8px 12px;background:#ffffff11;border-radius:10px}
+
+        /* Phrase nav */
+        .phrase-counter{font-size:13px;color:var(--muted);font-weight:600;text-align:center;margin:6px 0}
+        .phrase-actions{display:flex;gap:10px;width:100%;margin-top:8px}
+        .pa-btn{flex:1;padding:14px;border-radius:var(--r);border:none;font-size:14px;font-weight:700;cursor:pointer;transition:.2s}
+        .pa-btn:active{transform:scale(.97)}
+        .pa-prev{background:var(--c1);border:1.5px solid #3d1966;color:var(--txt)}
+        .pa-speak{background:#1e3a5f;border:1.5px solid var(--s);color:#67e8f9;flex:2}
+        .pa-next{background:var(--p2);color:#fff}
+
+        /* Progress bar */
+        .prog-bar{width:100%;height:5px;background:#3d1966;border-radius:50px;overflow:hidden;margin-bottom:4px}
+        .prog-fill{height:100%;background:linear-gradient(90deg,var(--p),var(--s));border-radius:50px;transition:width .3s}
+
+        /* Shared buttons */
         .btn-start{position:fixed;bottom:20px;left:20px;right:20px;padding:18px;background:linear-gradient(135deg,var(--p2),var(--s));border:none;border-radius:50px;color:white;font-weight:800;font-size:17px;cursor:pointer;z-index:1000;box-shadow:0 10px 20px rgba(0,0,0,0.4)}
+        .speak-btn{margin-top:10px;background:none;border:1.5px solid #3d1966;border-radius:50px;color:var(--muted);font-size:13px;padding:6px 18px;cursor:pointer;transition:0.2s}
+        .speak-btn:active{border-color:var(--s);color:var(--s)}
+        .back-btn{width:36px;height:36px;border-radius:50%;background:var(--c1);border:1.5px solid #3d1966;color:var(--txt);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+
+        /* ── DASHBOARD ── */
+        .dash-hero{width:100%;text-align:center;padding:30px 0 16px}
+        .streak-card{width:100%;background:linear-gradient(135deg,#2d1200,#1a0a00);border:1.5px solid #92400e;border-radius:24px;padding:24px;text-align:center;margin-bottom:12px}
+        .streak-fire{font-size:48px;line-height:1;margin-bottom:6px}
+        .streak-num{font-size:42px;font-weight:900;color:#fb923c;line-height:1}
+        .streak-lbl{font-size:13px;color:#fbbf24;margin-top:4px;font-weight:600}
+        .streak-sub{font-size:11px;color:var(--muted);margin-top:4px}
+        .dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;margin-bottom:12px}
+        .dash-box{background:var(--c1);border:1px solid #3d1966;border-radius:var(--r);padding:16px;text-align:center}
+        .dash-box-big{font-size:30px;font-weight:900;line-height:1;margin-bottom:4px}
+        .dash-box-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+        .srs-section{width:100%;background:var(--c1);border:1px solid #3d1966;border-radius:var(--r);padding:16px;margin-bottom:12px}
+        .srs-title{font-size:11px;font-weight:700;color:var(--p);letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px}
+        .srs-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+        .srs-row-label{font-size:12px;color:var(--txt);width:90px;flex-shrink:0}
+        .srs-bar-bg{flex:1;height:10px;background:#3d1966;border-radius:50px;overflow:hidden}
+        .srs-bar-fill{height:100%;border-radius:50px;transition:width .6s cubic-bezier(.4,0,.2,1)}
+        .srs-row-cnt{font-size:12px;color:var(--muted);font-weight:700;width:28px;text-align:right;flex-shrink:0}
+        .today-section{width:100%;background:var(--c1);border:1px solid #3d1966;border-radius:var(--r);padding:16px;margin-bottom:80px}
+        .today-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #3d196640}
+        .today-row:last-child{border-bottom:none}
+        .today-key{font-size:13px;color:var(--muted)}
+        .today-val{font-size:14px;font-weight:700;color:var(--txt)}
+        .dash-btn{position:fixed;bottom:20px;left:20px;right:20px;padding:16px;background:var(--c1);border:1.5px solid #3d1966;border-radius:50px;color:var(--txt);font-weight:700;font-size:15px;cursor:pointer;z-index:1000}
     </style>
 </head>
 <body>
 
+<!-- ══════════ HOME ══════════ -->
 <div id="home" class="screen active">
     <div class="hero">
-        <span style="font-size:36px">🔥</span>
+        <div style="display:flex;justify-content:flex-end;width:100%">
+            <button onclick="openDashboard()" style="background:var(--c1);border:1.5px solid #3d1966;border-radius:50px;padding:7px 14px;color:var(--muted);font-size:13px;font-weight:700;cursor:pointer">📊 İlerleme</button>
+        </div>
+        <span style="font-size:40px">🎓</span>
         <h1 class="app-title">WordMaster Pro</h1>
-        <p style="color:var(--muted); font-size:12px">Bugün Yeni Bir Şey Öğren</p>
+        <p style="color:var(--muted);font-size:12px;margin-top:4px">Gerçekten öğren, ezber yapma</p>
     </div>
 
     <div class="stats-grid">
-        <div class="stat-box"><span class="stat-num" id="stat-daily">0/30</span><span class="stat-lbl">Günün İlerlemesi</span></div>
+        <div class="stat-box"><span class="stat-num" id="stat-due">0</span><span class="stat-lbl">Bugün Tekrar</span></div>
+        <div class="stat-box"><span class="stat-num" id="stat-mastered">0</span><span class="stat-lbl">Ustalaştı ⭐</span></div>
         <div class="stat-box"><span class="stat-num" id="stat-wrong-count">0</span><span class="stat-lbl">Hata Kumbarası</span></div>
     </div>
 
-    <div class="section-label">🎯 ÖĞRENME ODAĞI</div>
+    <div class="section-label">📚 KELİME KAYNAĞI</div>
+    <div class="source-toggle">
+        <button class="src-btn active" id="src-lessons" onclick="setSource('lessons',this)">✨ Ders</button>
+        <button class="src-btn" id="src-words" onclick="setSource('words',this)">📖 Sözlük</button>
+    </div>
+    <p id="source-desc" style="font-size:11px;color:var(--muted);margin:6px 0 0;width:100%;text-align:center">125 kelime · örnek cümleli · sesli</p>
+
+    <div class="section-label">🎯 ÖĞRENME MODU</div>
     <div class="mode-cards">
-        <div class="mode-card active special" id="mode-daily" onclick="setAppMode('daily', this)">
+        <div class="mode-card active special" id="mode-daily" onclick="setAppMode('daily',this)">
             <span style="font-size:24px">📅</span>
-            <div><h3>Günün 30 Kelimesi</h3><p>Her gün taze, karma set.</p></div>
+            <div><h3>Günlük Set</h3><p>30 kelime, karma, her gün taze.</p></div>
         </div>
-        <div class="mode-card" id="mode-mistakes" onclick="setAppMode('mistakes', this)">
+        <div class="mode-card" id="mode-mistakes" onclick="setAppMode('mistakes',this)">
             <span style="font-size:24px">♻️</span>
             <div><h3>Hata Tekrarı</h3><p>Yanlış bildiklerini temizle.</p></div>
         </div>
+        <div class="mode-card" id="mode-srs" onclick="setAppMode('srs',this)">
+            <span style="font-size:24px">🧠</span>
+            <div style="flex:1"><h3>Akıllı Tekrar <span id="srs-badge" style="background:var(--err);color:#fff;border-radius:50px;padding:1px 8px;font-size:12px;margin-left:4px">0</span></h3><p id="srs-due-text">Bugün tekrar edilecek kelime yok.</p></div>
+        </div>
+        <div class="mode-card" id="mode-fill" onclick="setAppMode('fill',this)">
+            <span style="font-size:24px">✏️</span>
+            <div><h3>Cümle Tamamlama</h3><p>Boşluğu doğru kelimeyle doldur.</p></div>
+        </div>
+        <div class="mode-card" id="mode-phrases" onclick="setAppMode('phrases',this)">
+            <span style="font-size:24px">💬</span>
+            <div><h3>İngilizce Kalıplar</h3><p>60 hayat kurtaran gerçek cümle.</p></div>
+        </div>
     </div>
 
-    <button class="btn-start" onclick="initSession()">Çalışmaya Başla →</button>
+    <button class="btn-start" onclick="initSession()">Başla →</button>
 </div>
 
+<!-- ══════════ QUIZ ══════════ -->
 <div id="quiz" class="screen">
-    <div style="width:100%; display:flex; justify-content:space-between; align-items:center">
-        <button onclick="location.reload()" style="background:none; border:none; color:var(--muted); font-size:20px">✕</button>
-        <div style="font-size:14px; font-weight:700"><span id="q-idx">1</span> / <span id="q-total">30</span></div>
-        <div id="session-score" style="color:var(--ok); font-weight:800">0</div>
+    <div style="width:100%;display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <button onclick="goHome()" class="back-btn">✕</button>
+        <div style="font-size:14px;font-weight:700"><span id="q-idx">1</span> / <span id="q-total">30</span></div>
+        <div id="session-score" style="color:var(--ok);font-weight:800;font-size:16px">0 ✓</div>
     </div>
-    
+    <div class="prog-bar"><div class="prog-fill" id="q-prog" style="width:0%"></div></div>
+
     <div class="q-card">
-        <div id="q-cat" style="color:var(--p); font-size:11px; font-weight:700; letter-spacing:1px">KATEGORİ</div>
-        <div id="q-word" style="font-size:28px; font-weight:800; margin:10px 0">Kelime</div>
-        <div id="q-type" style="font-size:10px; color:var(--muted)">ÇEVİRİYİ SEÇ</div>
+        <div id="q-cat" style="color:var(--p);font-size:11px;font-weight:700;letter-spacing:1px;margin-bottom:8px">KATEGORİ</div>
+        <div id="q-word" style="font-size:30px;font-weight:800;margin:6px 0;line-height:1.2">Kelime</div>
+        <div id="q-type" style="font-size:11px;color:var(--muted);margin-top:6px">ÇEVİRİYİ SEÇ</div>
+        <button class="speak-btn" onclick="speakCurrent()">🔊 Dinle</button>
     </div>
+
     <div id="answers-container" style="width:100%"></div>
+
+    <div class="example-box" id="example-box">
+        <div class="example-label">📖 ÖRNEK CÜMLE</div>
+        <div class="example-text" id="example-text"></div>
+        <button class="speak-btn" onclick="speakExample()" style="margin-top:10px">🔊 Cümleyi Dinle</button>
+    </div>
+</div>
+
+<!-- ══════════ PHRASES ══════════ -->
+<div id="phrases" class="screen">
+    <div class="phrase-header">
+        <button onclick="goHome()" class="back-btn">✕</button>
+        <div style="font-size:14px;font-weight:700">💬 İngilizce Kalıplar</div>
+        <div id="ph-counter-top" style="font-size:13px;color:var(--muted);font-weight:600">1/60</div>
+    </div>
+
+    <div class="scenario-pills" id="scenario-pills"></div>
+    <div class="prog-bar"><div class="prog-fill" id="ph-prog" style="width:0%"></div></div>
+
+    <div class="phrase-scene">
+        <div class="phrase-card" id="phrase-card" onclick="flipPhrase()">
+            <div class="phrase-face pf-front">
+                <div class="scenario-tag" id="ph-scenario">🆘 İletişim</div>
+                <div class="phrase-tr" id="ph-tr">Türkçe anlam</div>
+                <div class="tap-hint">👆 İngilizce görmek için dokun</div>
+            </div>
+            <div class="phrase-face pf-back">
+                <div class="phrase-en" id="ph-en">English phrase</div>
+                <div class="phrase-tip" id="ph-tip">💡 İpucu</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="phrase-counter" id="ph-counter">1 / 60</div>
+
+    <div class="phrase-actions">
+        <button class="pa-btn pa-prev" onclick="prevPhrase()">‹ Önceki</button>
+        <button class="pa-btn pa-speak" onclick="speakPhrase()">🔊 Seslendir</button>
+        <button class="pa-btn pa-next" onclick="nextPhrase()">Sonraki ›</button>
+    </div>
+</div>
+
+<!-- ══════════ DASHBOARD ══════════ -->
+<div id="dashboard" class="screen">
+    <div style="width:100%;display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <button onclick="goHome()" class="back-btn">✕</button>
+        <div style="font-size:16px;font-weight:800;flex:1">📊 İlerleme</div>
+    </div>
+
+    <div class="streak-card">
+        <div class="streak-fire">🔥</div>
+        <div class="streak-num" id="dash-streak">0</div>
+        <div class="streak-lbl" id="dash-streak-lbl">günlük seri</div>
+        <div class="streak-sub" id="dash-streak-sub">Bugün bir seans tamamla!</div>
+    </div>
+
+    <div class="dash-grid">
+        <div class="dash-box">
+            <div class="dash-box-big" style="color:var(--ok)" id="dash-mastered">0</div>
+            <div class="dash-box-lbl">⭐ Ustalaştı</div>
+        </div>
+        <div class="dash-box">
+            <div class="dash-box-big" style="color:var(--s)" id="dash-studied">0</div>
+            <div class="dash-box-lbl">📚 Çalışıldı</div>
+        </div>
+        <div class="dash-box">
+            <div class="dash-box-big" style="color:var(--err)" id="dash-due">0</div>
+            <div class="dash-box-lbl">⏰ Bugün Tekrar</div>
+        </div>
+        <div class="dash-box">
+            <div class="dash-box-big" style="color:#fb923c" id="dash-sessions">0</div>
+            <div class="dash-box-lbl">🎯 Bugün Seans</div>
+        </div>
+    </div>
+
+    <!-- Overall progress bar -->
+    <div style="width:100%;background:var(--c1);border:1px solid #3d1966;border-radius:var(--r);padding:16px;margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+            <span style="font-size:11px;color:var(--p);font-weight:700;letter-spacing:.1em;text-transform:uppercase">GENEL İLERLEME</span>
+            <span style="font-size:12px;font-weight:700;color:var(--txt)" id="dash-progress-txt">0 / 0</span>
+        </div>
+        <div class="prog-bar" style="height:10px">
+            <div class="prog-fill" id="dash-progress-fill" style="width:0%"></div>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:8px;text-align:center" id="dash-progress-sub">Çalışmaya başla!</div>
+    </div>
+
+    <!-- SRS Level breakdown -->
+    <div class="srs-section">
+        <div class="srs-title">🧠 SRS SEVİYE DAĞILIMI</div>
+        <div class="srs-row">
+            <div class="srs-row-label">🌱 Yeni</div>
+            <div class="srs-bar-bg"><div class="srs-bar-fill" id="srs-bar-0" style="background:#6b7280;width:0%"></div></div>
+            <div class="srs-row-cnt" id="srs-cnt-0">0</div>
+        </div>
+        <div class="srs-row">
+            <div class="srs-row-label">📖 Başlangıç</div>
+            <div class="srs-bar-bg"><div class="srs-bar-fill" id="srs-bar-1" style="background:#3b82f6;width:0%"></div></div>
+            <div class="srs-row-cnt" id="srs-cnt-1">0</div>
+        </div>
+        <div class="srs-row">
+            <div class="srs-row-label">🔄 Gelişiyor</div>
+            <div class="srs-bar-bg"><div class="srs-bar-fill" id="srs-bar-2" style="background:#8b5cf6;width:0%"></div></div>
+            <div class="srs-row-cnt" id="srs-cnt-2">0</div>
+        </div>
+        <div class="srs-row">
+            <div class="srs-row-label">💪 İyi</div>
+            <div class="srs-bar-bg"><div class="srs-bar-fill" id="srs-bar-3" style="background:#06b6d4;width:0%"></div></div>
+            <div class="srs-row-cnt" id="srs-cnt-3">0</div>
+        </div>
+        <div class="srs-row">
+            <div class="srs-row-label">🎯 Çok İyi</div>
+            <div class="srs-bar-bg"><div class="srs-bar-fill" id="srs-bar-4" style="background:#10b981;width:0%"></div></div>
+            <div class="srs-row-cnt" id="srs-cnt-4">0</div>
+        </div>
+        <div class="srs-row">
+            <div class="srs-row-label">⭐ Usta</div>
+            <div class="srs-bar-bg"><div class="srs-bar-fill" id="srs-bar-5" style="background:#f59e0b;width:0%"></div></div>
+            <div class="srs-row-cnt" id="srs-cnt-5">0</div>
+        </div>
+    </div>
+
+    <!-- Today's stats -->
+    <div class="today-section">
+        <div class="srs-title">📅 BUGÜN</div>
+        <div class="today-row">
+            <span class="today-key">Tamamlanan Seans</span>
+            <span class="today-val" id="td-sessions">—</span>
+        </div>
+        <div class="today-row">
+            <span class="today-key">Doğru Cevap</span>
+            <span class="today-val" id="td-correct">—</span>
+        </div>
+        <div class="today-row">
+            <span class="today-key">Başarı Oranı</span>
+            <span class="today-val" id="td-pct">—</span>
+        </div>
+        <div class="today-row">
+            <span class="today-key">Hata Kumbarası</span>
+            <span class="today-val" id="td-wrong">—</span>
+        </div>
+    </div>
+
+    <button class="dash-btn" onclick="goHome()">← Ana Sayfa</button>
 </div>
 
 <script>
-let ALL_WORDS = [];
+// ═══ VERİ ════════════════════════════════════
+let LESSON_WORDS = [];
+let ALL_WORDS    = [];
+let PHRASES      = [];
+let currentEnWord   = '';
+let currentExample  = '';
+let currentPhraseEn = '';
+
+// ═══ SRS MOTORu ══════════════════════════════
+const SRS_INTERVALS = [1, 3, 7, 14, 30, 60]; // gün cinsinden
+let srsData = JSON.parse(localStorage.getItem('wm_srs') || '{}');
+
+function today() {
+    return new Date().toISOString().split('T')[0]; // "2026-04-16"
+}
+
+function addDays(days) {
+    const d = new Date();
+    d.setDate(d.getDate() + days);
+    return d.toISOString().split('T')[0];
+}
+
+function getSRS(wordKey) {
+    return srsData[wordKey] || { level: 0, nextReview: today() };
+}
+
+function updateSRS(wordKey, isCorrect) {
+    const entry = getSRS(wordKey);
+    if(isCorrect) {
+        entry.level = Math.min(entry.level + 1, 5);
+    } else {
+        entry.level = 0;
+    }
+    entry.nextReview = addDays(SRS_INTERVALS[entry.level]);
+    srsData[wordKey] = entry;
+    localStorage.setItem('wm_srs', JSON.stringify(srsData));
+}
+
+function getDueWords(pool) {
+    const t = today();
+    return pool.filter(w => {
+        const entry = getSRS(w.en);
+        return entry.nextReview <= t;
+    }).sort((a, b) => getSRS(a.en).level - getSRS(b.en).level); // düşük seviye önce
+}
+
+function getMasteredCount(pool) {
+    return pool.filter(w => getSRS(w.en).level >= 5).length;
+}
+
+// ═══ STATE ═══════════════════════════════════
 let state = {
-    mode: 'daily',
+    source:   'lessons',
+    mode:     'daily',
     sessionSet: [],
     currentIdx: 0,
     correctCount: 0,
-    wrongList: JSON.parse(localStorage.getItem('wm_wrong_list') || '[]')
+    wrongList: JSON.parse(localStorage.getItem('wm_wrong') || '[]')
+};
+let ph = {
+    filtered: [],
+    idx: 0,
+    scenario: 'all'
 };
 
-// Uygulama Modunu Ayarla
+// ═══ SES ═════════════════════════════════════
+function speak(text, lang) {
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = lang || 'en-GB';
+    u.rate = 0.85;
+    speechSynthesis.speak(u);
+}
+function speakCurrent() { if(currentEnWord) speak(currentEnWord); }
+function speakExample()  { if(currentExample) speak(currentExample); }
+function speakPhrase()   { if(currentPhraseEn) speak(currentPhraseEn); }
+
+// ═══ HOME ════════════════════════════════════
+function setSource(src, el) {
+    state.source = src;
+    document.querySelectorAll('.src-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('source-desc').textContent = src === 'lessons'
+        ? '125 kelime · örnek cümleli · sesli'
+        : `${ALL_WORDS.length} kelime · sesli`;
+    updateStats();
+}
+
 function setAppMode(m, el) {
     state.mode = m;
     document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('active'));
     el.classList.add('active');
 }
 
-// Oturumu Başlat
-async function initSession() {
-    if(ALL_WORDS.length === 0) return alert("Veriler yükleniyor...");
+function activeWords() {
+    return state.source === 'lessons' ? LESSON_WORDS : ALL_WORDS;
+}
 
-    if(state.mode === 'daily') {
-        // Günlük 30 kelimeyi çek (Hergün aynı kalsın istersen tarih bazlı seed atılabilir)
-        state.sessionSet = ALL_WORDS.sort(() => 0.5 - Math.random()).slice(0, 30);
+function updateStats() {
+    const pool    = activeWords();
+    const due     = getDueWords(pool).length;
+    const mastered= getMasteredCount(pool);
+    document.getElementById('stat-wrong-count').textContent = state.wrongList.length;
+    document.getElementById('stat-due').textContent         = due;
+    document.getElementById('stat-mastered').textContent    = mastered;
+    document.getElementById('srs-badge').textContent        = due;
+    document.getElementById('srs-badge').style.display      = due > 0 ? 'inline' : 'none';
+    document.getElementById('srs-due-text').textContent     = due > 0
+        ? `Bugün ${due} kelime tekrar bekliyor!`
+        : 'Bugünlük tamamlandı 🎉';
+}
+
+function goHome() {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById('home').classList.add('active');
+    updateStats();
+}
+
+// ═══ STREAK & GÜNLÜK İSTATİSTİK ══════════════
+function updateStreak() {
+    const t = today();
+    let streak = JSON.parse(localStorage.getItem('wm_streak') || '{"lastDate":"","count":0}');
+    if(streak.lastDate === t) return; // bugün zaten sayıldı
+    const prev = new Date(); prev.setDate(prev.getDate() - 1);
+    const yesterday = prev.toISOString().split('T')[0];
+    streak.count = (streak.lastDate === yesterday) ? streak.count + 1 : 1;
+    streak.lastDate = t;
+    localStorage.setItem('wm_streak', JSON.stringify(streak));
+}
+
+function recordDailyStats(correct, total) {
+    const t = today();
+    let daily = JSON.parse(localStorage.getItem('wm_daily') || '{}');
+    if(daily.date !== t) daily = {date: t, sessions: 0, correct: 0, total: 0};
+    daily.sessions++; daily.correct += correct; daily.total += total;
+    localStorage.setItem('wm_daily', JSON.stringify(daily));
+}
+
+// ═══ DASHBOARD ════════════════════════════════
+function openDashboard() {
+    renderDashboard();
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById('dashboard').classList.add('active');
+}
+
+function renderDashboard() {
+    const pool = activeWords();
+    const totalPool = pool.length;
+
+    // Streak
+    const streak = JSON.parse(localStorage.getItem('wm_streak') || '{"lastDate":"","count":0}');
+    const streakCount = streak.count || 0;
+    document.getElementById('dash-streak').textContent = streakCount;
+    document.getElementById('dash-streak-lbl').textContent = streakCount === 1 ? 'günlük seri' : 'günlük seri 🔥';
+    const t = today();
+    if(streak.lastDate === t) {
+        document.getElementById('dash-streak-sub').textContent = streakCount >= 7
+            ? `Harika gidiyorsun! ${streakCount} gün kesintisiz! 🏆`
+            : 'Bugün seansını tamamladın!';
     } else {
-        // Hata listesinden çek
-        if(state.wrongList.length === 0) return alert("Hata kumbaranız şu an boş! Önce günlük set çalışın.");
-        state.sessionSet = [...state.wrongList].sort(() => 0.5 - Math.random());
+        document.getElementById('dash-streak-sub').textContent = streakCount > 0
+            ? `Dünkü serinle devam et — bugün oyna!`
+            : 'Bugün bir seans tamamla!';
     }
 
-    state.currentIdx = 0;
+    // SRS dağılımı
+    const levels = [0, 0, 0, 0, 0, 0];
+    let studiedCount = 0;
+    pool.forEach(w => {
+        const entry = srsData[w.en];
+        if(entry) {
+            studiedCount++;
+            levels[entry.level] = (levels[entry.level] || 0) + 1;
+        }
+    });
+    const maxLevel = Math.max(...levels, 1);
+    for(let i = 0; i <= 5; i++) {
+        document.getElementById(`srs-cnt-${i}`).textContent = levels[i] || 0;
+        document.getElementById(`srs-bar-${i}`).style.width = ((levels[i] || 0) / maxLevel * 100) + '%';
+    }
+
+    // Sayılar
+    const mastered = levels[5] || 0;
+    const due = getDueWords(pool).length;
+    document.getElementById('dash-mastered').textContent = mastered;
+    document.getElementById('dash-studied').textContent  = studiedCount;
+    document.getElementById('dash-due').textContent      = due;
+
+    // Genel ilerleme
+    const pct = totalPool > 0 ? Math.round(studiedCount / totalPool * 100) : 0;
+    document.getElementById('dash-progress-txt').textContent = `${studiedCount} / ${totalPool}`;
+    document.getElementById('dash-progress-fill').style.width = pct + '%';
+    const motiveMsgs = ['Başlangıç yap!', 'Devam et!', 'İyi gidiyorsun! 💪', 'Neredeyse yarı yoldasın!', 'Çok iyi! 🎉', 'Son düzlüğe girdin! 🚀', 'Tüm kelimeleri çalıştın! 🏆'];
+    const msgIdx = Math.min(Math.floor(pct / 17), 6);
+    document.getElementById('dash-progress-sub').textContent = `%${pct} tamamlandı — ${motiveMsgs[msgIdx]}`;
+
+    // Bugün
+    const daily = JSON.parse(localStorage.getItem('wm_daily') || '{}');
+    if(daily.date === t && daily.sessions > 0) {
+        const dailyPct = Math.round(daily.correct / daily.total * 100);
+        document.getElementById('td-sessions').textContent = daily.sessions + ' seans';
+        document.getElementById('td-correct').textContent  = `${daily.correct} / ${daily.total}`;
+        document.getElementById('td-pct').textContent      = `%${dailyPct}`;
+        document.getElementById('dash-sessions').textContent = daily.sessions;
+    } else {
+        document.getElementById('td-sessions').textContent = 'Henüz yok';
+        document.getElementById('td-correct').textContent  = '—';
+        document.getElementById('td-pct').textContent      = '—';
+        document.getElementById('dash-sessions').textContent = '0';
+    }
+    document.getElementById('td-wrong').textContent = state.wrongList.length + ' kelime';
+}
+
+// ═══ SEANS BAŞLAT ════════════════════════════
+function initSession() {
+    if(state.mode === 'phrases') { openPhrases(); return; }
+
+    const pool = activeWords();
+    if(pool.length === 0) return alert('Kelimeler yükleniyor...');
+
+    if(state.mode === 'srs') {
+        const due = getDueWords(pool);
+        if(due.length === 0) return alert('🎉 Bugünlük tüm tekrarlar tamamlandı!\n\nYarın yeni kelimeler seni bekliyor.');
+        state.sessionSet = due;
+    } else if(state.mode === 'fill') {
+        const withEx = pool.filter(w => w.example);
+        if(withEx.length === 0) return alert('Bu kaynak için cümle verisi yok.\n"✨ Ders" kaynağını seç!');
+        state.sessionSet = [...withEx].sort(() => Math.random() - 0.5).slice(0, Math.min(20, withEx.length));
+    } else if(state.mode === 'daily') {
+        state.sessionSet = [...pool].sort(() => Math.random() - 0.5).slice(0, Math.min(30, pool.length));
+    } else {
+        if(state.wrongList.length === 0) return alert('Hata kumbarası boş! Önce günlük set çalış.');
+        state.sessionSet = [...state.wrongList].sort(() => Math.random() - 0.5);
+    }
+
+    state.currentIdx   = 0;
     state.correctCount = 0;
-    document.getElementById('home').classList.remove('active');
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById('quiz').classList.add('active');
-    document.getElementById('q-total').innerText = state.sessionSet.length;
+    document.getElementById('q-total').textContent = state.sessionSet.length;
     renderStep();
 }
 
-function renderStep() {
-    let word = state.sessionSet[state.currentIdx];
-    document.getElementById('q-idx').innerText = state.currentIdx + 1;
-    document.getElementById('q-cat').innerText = word.cat.toUpperCase();
-    
-    // Rastgele Dil Yönü (Öğretme odaklı karma)
-    let isEnToTr = Math.random() > 0.5;
-    document.getElementById('q-word').innerText = isEnToTr ? word.en : word.tr;
-    document.getElementById('q-type').innerText = isEnToTr ? "TÜRKÇE ANLAMINI SEÇ" : "İNGİLİZCE KARŞILIĞINI SEÇ";
-    
-    let correct = isEnToTr ? word.tr : word.en;
-    
-    // Çeldirici bul
-    let distractor = ALL_WORDS[Math.floor(Math.random() * ALL_WORDS.length)];
-    let wrong = isEnToTr ? distractor.tr : distractor.en;
-    if(wrong === correct) wrong = "Alternative"; 
+// ═══ QUIZ ════════════════════════════════════
+function escapeRegex(s) { return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); }
 
-    let options = [correct, wrong].sort(() => 0.5 - Math.random());
-    
-    let container = document.getElementById('answers-container');
+function renderStep() {
+    const word  = state.sessionSet[state.currentIdx];
+    const total = state.sessionSet.length;
+    const isFill = state.mode === 'fill';
+
+    document.getElementById('example-box').style.display = 'none';
+    document.getElementById('q-idx').textContent  = state.currentIdx + 1;
+    document.getElementById('q-cat').textContent  = word.cat.toUpperCase();
+    document.getElementById('q-prog').style.width = (state.currentIdx / total * 100) + '%';
+
+    currentEnWord  = word.en;
+    currentExample = word.example || '';
+
+    if(isFill) {
+        // Cümledeki kelimeyi ___ ile değiştir
+        const blanked = word.example.replace(new RegExp(escapeRegex(word.en),'i'), '___');
+        document.getElementById('q-word').textContent = blanked;
+        document.getElementById('q-word').style.fontSize = '17px';
+        document.getElementById('q-word').style.lineHeight = '1.6';
+        document.getElementById('q-type').textContent = '✏️  BOŞLUĞA HANGI KELİME GELİR?';
+        // Cümleyi seslendir (kelime olmadan — ipucu vermez, bağlamı anlatır)
+        speak(blanked.replace('___', 'blank'));
+    } else {
+        const isEnToTr = Math.random() > 0.5;
+        document.getElementById('q-word').textContent = isEnToTr ? word.en : word.tr;
+        document.getElementById('q-word').style.fontSize = '30px';
+        document.getElementById('q-word').style.lineHeight = '1.2';
+        document.getElementById('q-type').textContent = isEnToTr ? 'TÜRKÇE ANLAMINI SEÇ' : 'İNGİLİZCE KARŞILIĞINI SEÇ';
+        if(isEnToTr) speak(word.en);
+    }
+
+    const pool = isFill ? state.sessionSet : activeWords();
+    const correct = isFill ? word.en : (Math.random() > 0.5 ? word.tr : word.en);
+
+    // Fill modunda isEnToTr sabit — doğru cevap her zaman İngilizce
+    const correctFinal = isFill ? word.en : correct;
+    let distractor = pool[Math.floor(Math.random() * pool.length)];
+    let wrong = isFill ? distractor.en : (correct === word.tr ? distractor.tr : distractor.en);
+    if(wrong === correctFinal) wrong = isFill ? 'Something' : 'Hiçbiri';
+
+    const container = document.getElementById('answers-container');
     container.innerHTML = '';
-    
-    options.forEach(opt => {
-        let btn = document.createElement('button');
-        btn.className = 'ans-btn';
-        btn.innerText = opt;
-        btn.onclick = () => handleChoice(opt === correct, btn, word);
+    [correctFinal, wrong].sort(() => Math.random() - 0.5).forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className   = 'ans-btn';
+        btn.textContent = opt;
+        btn.onclick = () => handleChoice(opt === correctFinal, btn, word, isFill);
         container.appendChild(btn);
     });
 }
 
-function handleChoice(isCorrect, btn, wordObj) {
+function handleChoice(isCorrect, btn, wordObj, isFill) {
+    document.querySelectorAll('.ans-btn').forEach(b => b.onclick = null);
+
     if(isCorrect) {
         btn.classList.add('correct');
         state.correctCount++;
-        document.getElementById('session-score').innerText = state.correctCount;
-        
-        // Eğer hata listesindeyse ve bildiyse listeden çıkar
+        document.getElementById('session-score').textContent = state.correctCount + ' ✓';
         state.wrongList = state.wrongList.filter(w => w.en !== wordObj.en);
     } else {
         btn.classList.add('wrong');
-        // Hata listesine ekle (eğer zaten yoksa)
-        if(!state.wrongList.some(w => w.en === wordObj.en)) {
-            state.wrongList.push(wordObj);
-        }
+        // Fill modunda doğru cevabı göster
+        document.querySelectorAll('.ans-btn').forEach(b => {
+            if(b.textContent === wordObj.en) b.classList.add('reveal');
+        });
+        if(!state.wrongList.some(w => w.en === wordObj.en)) state.wrongList.push(wordObj);
     }
-    
-    localStorage.setItem('wm_wrong_list', JSON.stringify(state.wrongList));
-    updateHomeStats();
+    localStorage.setItem('wm_wrong', JSON.stringify(state.wrongList));
+    updateSRS(wordObj.en, isCorrect);
 
+    // Örnek cümleyi göster (fill modunda her zaman, normal modda varsa)
+    if(wordObj.example) {
+        const highlighted = wordObj.example.replace(
+            new RegExp(escapeRegex(wordObj.en), 'gi'),
+            m => `<em>${m}</em>`
+        );
+        const label = isFill
+            ? (isCorrect ? '✅ Tam cümle:' : '❌ Doğru cevap:')
+            : '📖 ÖRNEK CÜMLE';
+        document.getElementById('example-label') && (document.getElementById('example-label').textContent = label);
+        document.getElementById('example-text').innerHTML = highlighted;
+        document.getElementById('example-box').style.display = 'block';
+        if(isFill) speak(wordObj.example);
+    }
+
+    const delay = (wordObj.example || isFill) ? 2400 : 900;
     setTimeout(() => {
         state.currentIdx++;
         if(state.currentIdx < state.sessionSet.length) renderStep();
         else finishSession();
-    }, 800);
+    }, delay);
 }
 
 function finishSession() {
-    alert(`Seans Tamamlandı!\nSkor: ${state.correctCount} / ${state.sessionSet.length}\nYanlışların kumbaraya eklendi.`);
-    location.reload();
+    const total = state.sessionSet.length;
+    const pct   = Math.round((state.correctCount / total) * 100);
+    const emoji = pct === 100 ? '🏆' : pct >= 80 ? '🎉' : pct >= 60 ? '💪' : '📚';
+    updateStreak();
+    recordDailyStats(state.correctCount, total);
+    alert(`${emoji} Seans Bitti!\n\n✅ Doğru: ${state.correctCount} / ${total}  (${pct}%)\n❌ Hata Kumbarası: ${state.wrongList.length} kelime`);
+    goHome();
 }
 
-function updateHomeStats() {
-    document.getElementById('stat-wrong-count').innerText = state.wrongList.length;
+// ═══ PHRASES ═════════════════════════════════
+function openPhrases() {
+    if(PHRASES.length === 0) return alert('Kalıplar yükleniyor...');
+    buildScenarioPills();
+    filterPhrases('all');
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById('phrases').classList.add('active');
 }
 
-// Verileri Yükle
-fetch('words.json')
-    .then(r => r.json())
-    .then(data => {
-        ALL_WORDS = data;
-        updateHomeStats();
-    })
-    .catch(e => console.error("Veri hatası:", e));
+function buildScenarioPills() {
+    const scenarios = ['all', ...new Set(PHRASES.map(p => p.scenario))];
+    const container = document.getElementById('scenario-pills');
+    container.innerHTML = '';
+    scenarios.forEach(sc => {
+        const btn = document.createElement('button');
+        btn.className = 'spill' + (sc === ph.scenario ? ' active' : '');
+        btn.textContent = sc === 'all' ? '🌐 Tümü' : sc;
+        btn.onclick = () => { filterPhrases(sc); buildScenarioPills(); };
+        container.appendChild(btn);
+    });
+}
+
+function filterPhrases(scenario) {
+    ph.scenario = scenario;
+    ph.filtered = scenario === 'all' ? [...PHRASES] : PHRASES.filter(p => p.scenario === scenario);
+    ph.idx = 0;
+    renderPhrase();
+}
+
+function renderPhrase() {
+    const p     = ph.filtered[ph.idx];
+    const total = ph.filtered.length;
+    if(!p) return;
+
+    // Reset flip
+    document.getElementById('phrase-card').classList.remove('flipped');
+    currentPhraseEn = p.en;
+
+    document.getElementById('ph-scenario').textContent = p.scenario;
+    document.getElementById('ph-tr').textContent       = p.tr;
+    document.getElementById('ph-en').textContent       = p.en;
+    document.getElementById('ph-tip').textContent      = '💡 ' + (p.tip || '');
+    document.getElementById('ph-counter').textContent  = (ph.idx + 1) + ' / ' + total;
+    document.getElementById('ph-counter-top').textContent = (ph.idx + 1) + '/' + total;
+    document.getElementById('ph-prog').style.width = ((ph.idx + 1) / total * 100) + '%';
+}
+
+function flipPhrase() {
+    document.getElementById('phrase-card').classList.toggle('flipped');
+    // Çevrilince otomatik seslendir
+    if(document.getElementById('phrase-card').classList.contains('flipped')) {
+        setTimeout(() => speak(currentPhraseEn), 300);
+    }
+}
+
+function nextPhrase() {
+    if(ph.idx < ph.filtered.length - 1) { ph.idx++; renderPhrase(); }
+}
+function prevPhrase() {
+    if(ph.idx > 0) { ph.idx--; renderPhrase(); }
+}
+
+// ═══ VERİ YÜKLE ══════════════════════════════
+Promise.all([
+    fetch('lessons.json').then(r => r.json()),
+    fetch('words.json').then(r => r.json()),
+    fetch('phrases.json').then(r => r.json())
+]).then(([lessons, words, phrases]) => {
+    LESSON_WORDS = lessons;
+    ALL_WORDS    = words;
+    PHRASES      = phrases;
+    updateStats();
+}).catch(() => {
+    document.querySelector('.app-title').textContent = '⚠️ Sunucu gerekli';
+});
 </script>
 </body>
 </html>
